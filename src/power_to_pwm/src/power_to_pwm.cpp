@@ -34,6 +34,7 @@ void PowerToPwm::PowerCallback(Float64MultiArray::UniquePtr msg)
         double duration = norm_power * DURATION_RANGE + MIN_DURATION;
 
         double duty_cycle = duration / MAX_REPRESENTABLE_TIME;
-        set_pwm_channel_duty_cycle(9 + i, duty_cycle);
+        // Zero indexed
+        set_pwm_channel_duty_cycle(8 + i, duty_cycle);
     }
 }
