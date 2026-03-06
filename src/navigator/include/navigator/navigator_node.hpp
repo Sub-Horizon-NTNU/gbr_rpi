@@ -3,21 +3,27 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/float64_multi_array.hpp"
+#include "std_msgs/msg/float64.hpp"
 #include <vector>
 
 using std_msgs::msg::Float64MultiArray;
+using std_msgs::msg::Float64;
 
-class PowerToPwm : public rclcpp::Node
+class Navigator : public rclcpp::Node
 {
 public:
-    PowerToPwm();
+    Navigator();
 
 private:
-    void PowerCallback(Float64MultiArray::UniquePtr msg);
+    void powerCallback(Float64MultiArray::UniquePtr msg);
+
+    void lightCallback(Float64::UniquePtr msg);
 
     void idleTimerCallback();
 
     void setPower(const std::vector<double> &thruster_power);
+
+    double normalisedToDutyCycle(double norm);
 
 private:
     static constexpr int MAX_REPRESENTABLE_TIME = 4000;
@@ -25,6 +31,7 @@ private:
     static constexpr int MAX_DURATION = 1900;
     static constexpr int DURATION_RANGE = MAX_DURATION - MIN_DURATION;
     rclcpp::Subscription<Float64MultiArray>::SharedPtr power_subscriber_;
+    rclcpp::Subscription<Float64>::SharedPtr light_subscriber_;
     rclcpp::TimerBase::SharedPtr idle_timer_;
 };
 

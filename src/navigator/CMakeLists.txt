@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.8)
-project(power_to_pwm)
+project(navigator)
+
+set(NODE_NAME "${PROJECT_NAME}_node")
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -10,22 +12,22 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 
-add_executable(${PROJECT_NAME} src/main.cpp src/power_to_pwm.cpp)
+add_executable(${NODE_NAME} src/main.cpp src/navigator_node.cpp)
 
-target_include_directories(${PROJECT_NAME} PRIVATE
+target_include_directories(${NODE_NAME} PRIVATE
     include
     lib/navigator-lib
 )
 
-target_link_directories(${PROJECT_NAME} PRIVATE lib/navigator-lib/lib)
-target_link_libraries(${PROJECT_NAME} 
+target_link_directories(${NODE_NAME} PRIVATE lib/navigator-lib/lib)
+target_link_libraries(${NODE_NAME} 
     rclcpp::rclcpp
     ${std_msgs_TARGETS}
     bluerobotics_navigator
 )
 
 install(TARGETS
-    ${PROJECT_NAME}
+    ${NODE_NAME}
     DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
