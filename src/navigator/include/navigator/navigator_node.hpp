@@ -26,8 +26,10 @@ private:
     double normalisedToDutyCycle(double norm);
 
 private:
+    static constexpr double MAX_POWER = 0.75;
     static constexpr int MAX_REPRESENTABLE_TIME = 4000;
     static constexpr int MIN_DURATION = 1100;
+    static constexpr int OFF_DURATION = 1500;
     static constexpr int MAX_DURATION = 1900;
     static constexpr int DURATION_RANGE = MAX_DURATION - MIN_DURATION;
     rclcpp::Subscription<Float64MultiArray>::SharedPtr power_subscriber_;

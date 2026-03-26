@@ -61,6 +61,9 @@ void Navigator::setPower(const std::vector<double> &thruster_power)
         double norm_power = (power + 1)/2;
 
         double duty_cycle = normalisedToDutyCycle(norm_power);
+        double duration =  OFF_DURATION + power * DURATION_RANGE / 2 * MAX_POWER;
+        double duty_cycle = duration / MAX_REPRESENTABLE_TIME;
+
         set_pwm_channel_duty_cycle(i, duty_cycle);
         // RCLCPP_INFO(get_logger(), "%i: %fms, %f%%", i, duration, duty_cycle);
     }
