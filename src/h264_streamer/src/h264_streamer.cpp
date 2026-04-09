@@ -6,6 +6,7 @@ H264Streamer::H264Streamer()
 {
     this->declare_parameter<std::string>("device", "/dev/video0");
     std::string device = this->get_parameter("device").as_string();
+    RCLCPP_INFO(get_logger(), "Video Device: %s", device.c_str());
 
     this->declare_parameter<std::string>("topic_name", "/image_compressed");
     std::string topic_name = this->get_parameter("topic_name").as_string();
@@ -14,8 +15,6 @@ H264Streamer::H264Streamer()
     g_object_set(camera_, "device", device.c_str(), nullptr);
 
     capsfilter_ = gst_element_factory_make("capsfilter", "capsfilter");
-    convert_    = gst_element_factory_make("videoconvert", "convert");
-    encoder_    = gst_element_factory_make("x264enc", "encoder");
     sink_       = gst_element_factory_make("appsink", "sink");
 
     pipeline_ = UniquePipeline(gst_pipeline_new("h264_stream"));
@@ -26,15 +25,8 @@ H264Streamer::H264Streamer()
         "height", G_TYPE_INT, 480,
         "framerate", GST_TYPE_FRACTION, 30, 1,
         nullptr);
-    g_object_set(capsfilter_, "caps", caps, nullptr);
+    // g_object_set(capsfilter_, "caps", caps, nullptr);
     gst_caps_unref(caps);
-
-    g_object_set(encoder_,
-        "tune", 4,
-        "speed-preset", 1,
-        "key-int-max", 1,
-        "bitrate", 2000,
-        nullptr);
 
     g_object_set(sink_,
         "sync", FALSE,
@@ -43,10 +35,10 @@ H264Streamer::H264Streamer()
         nullptr);
 
     gst_bin_add_many(GST_BIN(pipeline_.get()), camera_,
-                     capsfilter_, convert_, encoder_, sink_, nullptr);
+                     capsfilter_, sink_, nullptr);
 
-    if (gst_element_link_many(camera_, capsfilter_, convert_,
-                              encoder_, sink_, nullptr) != TRUE)
+    if (gst_element_link_many(camera_, capsfilter_,
+                sink_, nullptr) != TRUE)
     {
         std::cerr << "Failed to link gstreamer elements" << std::endl;
         std::exit(-1);
@@ -55,13 +47,11 @@ H264Streamer::H264Streamer()
     gst_element_set_state(pipeline_.get(), GST_STATE_PLAYING);
 
     image_publisher_ = create_publisher<CompressedImage>(topic_name, 1);
-    thread_ = std::make_unique<std::jthread>(
-            std::bind(&H264Streamer::image_capture, this, std::placeholders::_1));
+    thread_ = std::jthread{ std::bind(&H264Streamer::image_capture, this, std::placeholders::_1) };
 }
 
 H264Streamer::~H264Streamer()
 {
-    thread_.reset();
 }
 
 void H264Streamer::image_capture(std::stop_token st)

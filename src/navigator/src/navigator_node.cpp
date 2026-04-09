@@ -22,8 +22,13 @@ Navigator::Navigator()
     light_subscriber_ = create_subscription<Float64>("/gbr/light", 1,
             std::bind(&Navigator::lightCallback, this, std::placeholders::_1));
 
+    imu_publisher_ = create_publisher<Imu>("/gbr/imu", 1);
+
     idle_timer_ = create_timer(std::chrono::milliseconds(1000), 
             std::bind(&Navigator::idleTimerCallback, this));
+
+    imu_poll_timer_ = create_timer(std::chrono::milliseconds(10), 
+            std::bind(&Navigator::imuPollCallback, this));
 }
 
 void Navigator::powerCallback(Float64MultiArray::UniquePtr msg)
@@ -43,9 +48,25 @@ void Navigator::idleTimerCallback()
     setPower(power);
 }
 
+void Navigator::imuPollCallback()
+{
+    AxisData acceleration = read_accel();
+    AxisData gyro = read_gyro();
+
+    Imu msg;
+    msg.linear_acceleration.x = acceleration.x;
+    msg.linear_acceleration.y = acceleration.y;
+    msg.linear_acceleration.z = acceleration.z;
+    msg.angular_velocity.x = gyro.x;
+    msg.angular_velocity.y = gyro.y;
+    msg.angular_velocity.z = gyro.z;
+
+    imu_publisher_->publish(msg);
+}
+
 void Navigator::setPower(const std::vector<double> &thruster_power)
 {
-    // Feels hacky, but works
+    // Feels hacky, but works (kinda)
     idle_timer_->cancel();
     idle_timer_ = create_timer(std::chrono::milliseconds(1000), 
             std::bind(&Navigator::idleTimerCallback, this));
@@ -60,7 +81,7 @@ void Navigator::setPower(const std::vector<double> &thruster_power)
 
         double norm_power = (power + 1)/2;
 
-        double duty_cycle = normalisedToDutyCycle(norm_power);
+        // double duty_cycle = normalisedToDutyCycle(norm_power);
         double duration =  OFF_DURATION + power * DURATION_RANGE / 2 * MAX_POWER;
         double duty_cycle = duration / MAX_REPRESENTABLE_TIME;
 

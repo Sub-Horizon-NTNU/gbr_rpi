@@ -31,14 +31,12 @@ public:
 private:
     rclcpp::Publisher<CompressedImage>::SharedPtr image_publisher_;
 
-    std::unique_ptr<std::jthread> thread_;
+    std::jthread thread_;
     std::mutex mutex_;
 
     GstElement *camera_;
     GstElement *capsfilter_;
-    // Just for testing
     GstElement *convert_;
-    GstElement *encoder_;
     GstElement *sink_;
     UniquePipeline pipeline_;
 };

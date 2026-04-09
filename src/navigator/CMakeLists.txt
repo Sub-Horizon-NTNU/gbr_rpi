@@ -11,6 +11,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 add_executable(${NODE_NAME} src/main.cpp src/navigator_node.cpp)
 
@@ -23,6 +24,7 @@ target_link_directories(${NODE_NAME} PRIVATE lib/navigator-lib/lib)
 target_link_libraries(${NODE_NAME} 
     rclcpp::rclcpp
     ${std_msgs_TARGETS}
+    ${sensor_msgs_TARGETS}
     bluerobotics_navigator
 )
 

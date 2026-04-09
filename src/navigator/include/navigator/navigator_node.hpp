@@ -4,10 +4,12 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/float64_multi_array.hpp"
 #include "std_msgs/msg/float64.hpp"
+#include "sensor_msgs/msg/imu.hpp"
 #include <vector>
 
 using std_msgs::msg::Float64MultiArray;
 using std_msgs::msg::Float64;
+using sensor_msgs::msg::Imu;
 
 class Navigator : public rclcpp::Node
 {
@@ -20,6 +22,8 @@ private:
     void lightCallback(Float64::UniquePtr msg);
 
     void idleTimerCallback();
+
+    void imuPollCallback();
 
     void setPower(const std::vector<double> &thruster_power);
 
@@ -34,7 +38,9 @@ private:
     static constexpr int DURATION_RANGE = MAX_DURATION - MIN_DURATION;
     rclcpp::Subscription<Float64MultiArray>::SharedPtr power_subscriber_;
     rclcpp::Subscription<Float64>::SharedPtr light_subscriber_;
+    rclcpp::Publisher<Imu>::SharedPtr imu_publisher_;
     rclcpp::TimerBase::SharedPtr idle_timer_;
+    rclcpp::TimerBase::SharedPtr imu_poll_timer_;
 };
 
 #endif // POWER_TO_PWM_HPP
