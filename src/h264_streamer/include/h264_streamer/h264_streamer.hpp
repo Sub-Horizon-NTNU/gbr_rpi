@@ -32,7 +32,6 @@ private:
     rclcpp::Publisher<CompressedImage>::SharedPtr image_publisher_;
 
     std::jthread thread_;
-    std::mutex mutex_;
 
     GstElement *camera_;
     GstElement *capsfilter_;

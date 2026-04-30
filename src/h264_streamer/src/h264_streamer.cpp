@@ -20,12 +20,13 @@ H264Streamer::H264Streamer()
     pipeline_ = UniquePipeline(gst_pipeline_new("h264_stream"));
 
     GstCaps *caps = gst_caps_new_simple(
-        "video/x-raw",
-        "width", G_TYPE_INT, 640,
-        "height", G_TYPE_INT, 480,
-        "framerate", GST_TYPE_FRACTION, 30, 1,
+        "video/x-h264",
+        "alignment", G_TYPE_STRING, "au",
+        // "width", G_TYPE_INT, 640,
+        // "height", G_TYPE_INT, 480,
+        // "framerate", GST_TYPE_FRACTION, 30, 1,
         nullptr);
-    // g_object_set(capsfilter_, "caps", caps, nullptr);
+    g_object_set(capsfilter_, "caps", caps, nullptr);
     gst_caps_unref(caps);
 
     g_object_set(sink_,
@@ -46,7 +47,9 @@ H264Streamer::H264Streamer()
 
     gst_element_set_state(pipeline_.get(), GST_STATE_PLAYING);
 
-    image_publisher_ = create_publisher<CompressedImage>(topic_name, 1);
+    rclcpp::QoS qos = rclcpp::SensorDataQoS();
+    qos.keep_last(0);
+    image_publisher_ = create_publisher<CompressedImage>(topic_name, qos);
     thread_ = std::jthread{ std::bind(&H264Streamer::image_capture, this, std::placeholders::_1) };
 }
 
@@ -59,7 +62,6 @@ void H264Streamer::image_capture(std::stop_token st)
     // for (int i = 0; i < 1000; i++)
     while (!st.stop_requested())
     {
-        std::lock_guard<std::mutex> lock(mutex_);
         GstSample *sample = gst_app_sink_pull_sample(GST_APP_SINK(sink_));
         if (!sample)
         {

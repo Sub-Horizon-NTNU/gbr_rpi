@@ -11,7 +11,7 @@ EnvironmentFile=/home/kaffi/rpi_ws/install/setup.bash
 ; ExecStart=/opt/ros/jazzy/bin/ros2 run power_to_pwm power_to_pwm
 ; ExecStart=/bin/bash -c '. /home/kaffi/.profile && . /opt/ros/jazzy/setup.bash && . /home/kaffi/rpi_ws/install/setup.bash && /opt/ros/jazzy/bin/ros2 run power_to_pwm power_to_pwm'
 ; ExecStart=/bin/bash -c '. /home/kaffi/.bashrc && . /home/kaffi/rpi_ws/install/setup.bash && ROS_DOMAIN_ID=42 env'
-ExecStart=/bin/bash -c '. /home/kaffi/.bashrc && . /home/kaffi/rpi_ws/install/setup.bash && ROS_DOMAIN_ID=42 /opt/ros/jazzy/bin/ros2 run power_to_pwm power_to_pwm'
+ExecStart=/bin/bash -c '. /home/kaffi/.bashrc && . /home/kaffi/rpi_ws/install/setup.bash && ROS_DOMAIN_ID=42 /opt/ros/jazzy/bin/ros2 launch launcher bringup.launch.py'
 ExecStop=/bin/kill -TERM $MAINPID
 Restart=on-failure
 RestartSec=5s

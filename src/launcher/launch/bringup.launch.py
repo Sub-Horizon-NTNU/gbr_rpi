@@ -11,7 +11,7 @@ def generate_launch_description():
 
     cameras = IncludeLaunchDescription(
             PathJoinSubstitution([
-                FindPackageShare('launcher'),
+                FindPackageShare('h264_streamer'),
                 'launch',
                 "cameras.launch.py"
                 ]),
@@ -30,8 +30,8 @@ def generate_launch_description():
 
     # Return a launch description generated from node list
     return LaunchDescription([
-            DeclareLaunchArgument("left_cam_path", default_value="/dev/video0"),
-            DeclareLaunchArgument("right_cam_path", default_value="/dev/video4"),
+            DeclareLaunchArgument("left_cam_path", default_value="/dev/video2"),
+            DeclareLaunchArgument("right_cam_path", default_value="/dev/video6"),
             cameras,
             navigator
         ])
