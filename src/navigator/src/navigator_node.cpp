@@ -22,7 +22,8 @@ Navigator::Navigator()
     light_subscriber_ = create_subscription<Float64>("/gbr/light", 1,
             std::bind(&Navigator::lightCallback, this, std::placeholders::_1));
 
-    imu_publisher_ = create_publisher<Imu>("/gbr/imu", 1);
+    rclcpp::QoS sensorQos = rclcpp::SensorDataQoS();
+    imu_publisher_ = create_publisher<Imu>("/gbr/navigator_imu", sensorQos);
 
     idle_timer_ = create_timer(std::chrono::milliseconds(1000), 
             std::bind(&Navigator::idleTimerCallback, this));

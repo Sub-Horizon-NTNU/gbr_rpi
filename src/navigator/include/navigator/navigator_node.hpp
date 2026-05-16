@@ -36,9 +36,11 @@ private:
     static constexpr int OFF_DURATION = 1500;
     static constexpr int MAX_DURATION = 1900;
     static constexpr int DURATION_RANGE = MAX_DURATION - MIN_DURATION;
+
     rclcpp::Subscription<Float64MultiArray>::SharedPtr power_subscriber_;
     rclcpp::Subscription<Float64>::SharedPtr light_subscriber_;
     rclcpp::Publisher<Imu>::SharedPtr imu_publisher_;
+
     rclcpp::TimerBase::SharedPtr idle_timer_;
     rclcpp::TimerBase::SharedPtr imu_poll_timer_;
 };

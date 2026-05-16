@@ -21,6 +21,22 @@ def generate_launch_description():
                 }.items()
             )
 
+    imus = IncludeLaunchDescription(
+            PathJoinSubstitution([
+                FindPackageShare('imu_reader'),
+                'launch',
+                "imu_launch.py"
+                ])
+            )
+
+    pressure_sensor = IncludeLaunchDescription(
+            PathJoinSubstitution([
+                FindPackageShare('pressure_reader'),
+                'launch',
+                "pressure.launch.py"
+                ])
+            )
+
     navigator = Node(
         package="navigator",
         executable="navigator_node",
@@ -33,5 +49,7 @@ def generate_launch_description():
             DeclareLaunchArgument("left_cam_path", default_value="/dev/video2"),
             DeclareLaunchArgument("right_cam_path", default_value="/dev/video6"),
             cameras,
+            imus,
+            pressure_sensor,
             navigator
         ])

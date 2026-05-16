@@ -16,8 +16,7 @@ def generate_launch_description():
         namespace="gbr/cam_left",
         parameters=[{ "device": left_cam_path },
                     { "topic_name": "/gbr/cam_left/image_compressed" }],
-        # arguments=[left_cam_path],
-        output="screen"
+        # output="screen"
     )
 
     right_cam = Node(
@@ -27,8 +26,7 @@ def generate_launch_description():
         namespace="gbr/cam_right",
         parameters=[{ "device": right_cam_path },
                     { "topic_name": "/gbr/cam_right/image_compressed" }],
-        # arguments=[right_cam_path],
-        output="screen"
+        # output="screen"
     )
 
     # Return a launch description generated from node list

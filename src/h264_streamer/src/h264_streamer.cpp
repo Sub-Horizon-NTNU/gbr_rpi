@@ -22,9 +22,9 @@ H264Streamer::H264Streamer()
     GstCaps *caps = gst_caps_new_simple(
         "video/x-h264",
         "alignment", G_TYPE_STRING, "au",
-        // "width", G_TYPE_INT, 640,
-        // "height", G_TYPE_INT, 480,
-        // "framerate", GST_TYPE_FRACTION, 30, 1,
+        "width", G_TYPE_INT, 640,
+        "height", G_TYPE_INT, 480,
+        "framerate", GST_TYPE_FRACTION, 30, 1,
         nullptr);
     g_object_set(capsfilter_, "caps", caps, nullptr);
     gst_caps_unref(caps);
@@ -47,8 +47,7 @@ H264Streamer::H264Streamer()
 
     gst_element_set_state(pipeline_.get(), GST_STATE_PLAYING);
 
-    rclcpp::QoS qos = rclcpp::SensorDataQoS();
-    qos.keep_last(0);
+    auto qos = rclcpp::QoS(1).best_effort();
     image_publisher_ = create_publisher<CompressedImage>(topic_name, qos);
     thread_ = std::jthread{ std::bind(&H264Streamer::image_capture, this, std::placeholders::_1) };
 }
@@ -59,7 +58,6 @@ H264Streamer::~H264Streamer()
 
 void H264Streamer::image_capture(std::stop_token st)
 {
-    // for (int i = 0; i < 1000; i++)
     while (!st.stop_requested())
     {
         GstSample *sample = gst_app_sink_pull_sample(GST_APP_SINK(sink_));
@@ -81,9 +79,11 @@ void H264Streamer::image_capture(std::stop_token st)
             std::cout << "No map" << std::endl;
             continue;
         }
+
         CompressedImage msg;
         std::copy(map.data, map.data + map.size, std::back_inserter(msg.data));
-        msg.header.stamp = rclcpp::Time(buffer->dts);
+        // msg.header.stamp = rclcpp::Time(buffer->pts);
+        msg.header.stamp = get_clock()->now();
         msg.format = "h264";
         image_publisher_->publish(msg);
         gst_buffer_unmap(buffer, &map);

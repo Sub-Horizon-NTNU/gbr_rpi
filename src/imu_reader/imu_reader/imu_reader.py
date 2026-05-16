@@ -4,12 +4,13 @@ from sensor_msgs.msg import Imu
 from smbus2 import SMBus
 import time
 import json
+import numpy as np
 
 class IMUNode(Node):
     def __init__(self):
         super().__init__('imu_node')
 
-        self.declare_parameter('imus', '[{"channel":0,"acc_addr":0x18,"gyro_addr":0x68,"topic":"/gbr/imu1","acc_scale":1367.0,"gyro_scale":16.4}, ...]')
+        self.declare_parameter('imus', '[{"channel":0,"acc_addr":0x18,"gyro_addr":0x68,"topic":"/gbr/imu1"}]')
         self.declare_parameter('i2c_bus', 6)
         self.declare_parameter('mux_addr', 0x70)
 
@@ -49,25 +50,32 @@ class IMUNode(Node):
 
 
         self.bus.write_byte(self.mux_addr, 1 << channel)
-        time.sleep(0.1)
+        time.sleep(0.01)
 
-        # ---- Accelerometer ----
+        # Accelerometer
+        # Reset
         self.write_with_retry(acc_addr, 0x7E, 0xB6)
-        time.sleep(0.1)
-        self.write_with_retry(acc_addr, 0x40, 0x28)
-        time.sleep(0.1)
-        self.write_with_retry(acc_addr, 0x41, 0x03)
-        time.sleep(0.1)
+        time.sleep(0.01)
+        # Set data rate and oversampling (odr 400 Hz and OSR4 oversampling)
+        self.write_with_retry(acc_addr, 0x40, 0x8A)
+        time.sleep(0.01)
+        # Set accel range to lowest (±3g)
+        self.write_with_retry(acc_addr, 0x41, 0x00)
+        time.sleep(0.01)
+        # Accel on
         self.write_with_retry(acc_addr, 0x7D, 0x04)
-        time.sleep(0.1)
+        time.sleep(0.01)
+        # Activate
         self.write_with_retry(acc_addr, 0x7C, 0x00)
-        time.sleep(0.1)
+        time.sleep(0.01)
 
-        # ---- Gyro ----
+        # Gyro 
+        # Reset
         self.write_with_retry(gyro_addr, 0x7E, 0xB6)
-        time.sleep(0.1)
+        time.sleep(0.05)
+        # Set gyro range to lowest (120 deg/s)
         self.write_with_retry(gyro_addr, 0x0F, 0x04)
-        time.sleep(0.1)
+        time.sleep(0.05)
 
     def _read_accel(self, acc_addr, acc_scale):
         data = self.bus.read_i2c_block_data(acc_addr, 0x12, 6)
@@ -90,9 +98,9 @@ class IMUNode(Node):
         if x >= 32768: x -= 65536
         if y >= 32768: y -= 65536
         if z >= 32768: z -= 65536
-        gx = x / gyro_scale * (3.141592653589793 / 180.0)
-        gy = y / gyro_scale * (3.141592653589793 / 180.0)
-        gz = z / gyro_scale * (3.141592653589793 / 180.0)
+        gx = np.deg2rad(x / gyro_scale)
+        gy = np.deg2rad(y / gyro_scale)
+        gz = np.deg2rad(z / gyro_scale)
         return gx, gy, gz
 
     def timer_callback(self):
@@ -100,8 +108,10 @@ class IMUNode(Node):
             channel = cfg['channel']
             acc_addr = cfg['acc_addr']
             gyro_addr = cfg['gyro_addr']
-            acc_scale = cfg['acc_scale']
-            gyro_scale = cfg['gyro_scale']
+            # sensitivity LSB/g
+            acc_scale = 10920
+            # sensitivity LSB/deg/s
+            gyro_scale = 262.144
             topic = cfg['topic']
 
             self.bus.write_byte(self.mux_addr, 1 << channel)
