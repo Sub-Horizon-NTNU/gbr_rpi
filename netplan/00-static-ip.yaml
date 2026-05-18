@@ -1,0 +1,9 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    eth0:
+      addresses:
+        [192.168.69.69/24]
+      dhcp6: false 
+      dhcp4: false
